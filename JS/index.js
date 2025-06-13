@@ -127,3 +127,61 @@ let str = JSON.stringify(arrSinhVien);
 
 let strOb =  `{"id":1,"name":"iphone"}`;
 let obJson = JSON.parse(strOb);
+
+//---------luu tru client-----------
+
+//LocalStoreage: luu tru client khong thoi han
+/*
+    .set(key, value) luu du lieu
+    .get(key) lay du lieu
+    .remove(key) xoa du lieeu
+    Lưu ý: localstorage chỉ lưu được primitive value (string, number, bool,...)
+    Nếu muốn lưu object hoặc collection vào localstorage thì phải chuyển thành string
+*/
+
+localStorage.setItem('username','khaitruong123@gmail.com');
+
+if(localStorage.getItem('username')){
+    document.querySelector('body').innerHTML = localStorage.getItem('username');
+}else {
+      document.querySelector('body').innerHTML = 'chưa đăng nhập';
+}
+
+localStorage.setItem('arrSinhVien', Json.stringify(arrSinhVien) );
+
+let strArr = localStorage.getItem('arrSinhVien');
+console.log(strArr);
+
+//Tương tác http - GET, POST, PUT, DELETE - client side (pc,laptop,mobile app)
+/*
+    fetch: trình duyện hoặc axios (library)
+*/
+
+let result = await fetch('https://svcy.myclass.vn/api/ProductApi/getall');
+let jsonResult = await result.json();
+
+console.log(jsonResult);
+
+//post
+const dataPost = {
+  id: "sv000119",
+  name: "string",
+  price: "string",
+  img: "string",
+  description: "string",
+  type: "string",
+  deleted: true
+};
+let resultPost = await fetch('https://svcy.myclass.vn/api/ProductApi/create', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+  body: JSON.stringify(dataPost)
+});
+let mess = await resultPost.json();
+console.log(mess);
+
+//client giao tiếp server qua websocket
+console.log(signalR);
+
