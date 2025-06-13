@@ -77,3 +77,53 @@ console.log(SinhVien);
 for (let key in SinhVien) {
     console.log('key', `${key} - ${SinhVien[key]}`)
 }
+
+//fetch: gọi dữ liệu từ server giống httpClient trong C#
+let res = await fetch('/data/data.json');
+let data = await res.json();
+
+console.log(data)
+
+//object collection (array)
+let arr = [
+    1, 2, 3, 4, 5
+];
+
+console.log(arr);
+
+//duyệt vòng lặp js nên dùng for of để lấy ra value mà không cần thong qua index
+for (let value of arr) {
+    console.log('value', value)
+}
+
+//array object
+let arrSinhVien = [
+    { id: 1, name: 'AAA', age: 19 }, //index: 0
+    { id: 2, name: 'BBB', age: 20 }, //index: 1
+    { id: 3, name: 'CCC', age: 21 }, //index: 2
+]
+
+for (let sv of arrSinhVien) {
+    console.log(sv);
+}
+
+//crud
+//creat: push: thêm vào cuối
+arrSinhVien.push({ id: 4, name: 'DDD', age: 22 });
+
+//delete
+arrSinhVien.splice(2, 1); //xóa 1 phần tử index = 2
+
+//update
+arrSinhVien[1].age = 99;
+
+/*
+    Chuyển đổi kiểu dữ liệu giữa string và object
+    JSON.stringify(object) => string
+    JSONG.parse(string) => object
+*/
+
+let str = JSON.stringify(arrSinhVien);
+
+let strOb =  `{"id":1,"name":"iphone"}`;
+let obJson = JSON.parse(strOb);
