@@ -1,0 +1,225 @@
+-- BÀI TẬP THỰC HÀNH SQL SERVER
+
+CREATE DATABASE SalesDB;
+USE SalesDB;
+
+CREATE TABLE Customers (
+    CustomerID INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(100) NOT NULL,
+    Email NVARCHAR(100),
+    Phone NVARCHAR(20),
+    Address NVARCHAR(255)
+);
+
+CREATE TABLE Products (
+    ProductID INT IDENTITY(1,1) PRIMARY KEY,
+    ProductName NVARCHAR(100) NOT NULL,
+    Price INT CHECK (Price >= 0),
+    Stock INT CHECK (Stock >= 0)
+);
+
+CREATE TABLE Orders (
+    OrderID INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    OrderDate DATE DEFAULT GETDATE(),
+    TotalAmount INT,
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID)
+);
+
+CREATE TABLE OrderDetails (
+    OrderDetailID INT IDENTITY(1,1) PRIMARY KEY,
+    OrderID INT NOT NULL,
+    ProductID INT NOT NULL,
+    Quantity INT CHECK (Quantity > 0),
+    Price INT CHECK (Price >= 0),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+--THÊM DỮ LIỆU
+INSERT INTO Customers (Name, Email, Phone, Address)
+VALUES 
+(N'Nguyễn Văn A', 'nva@example.com', '0901123456', N'Hà Nội'),
+(N'Trần Thị B', 'ttb@example.com', '0912233445', N'Hồ Chí Minh'),
+(N'Lê Văn C', 'lvc@example.com', '0987654321', N'Đà Nẵng');
+
+INSERT INTO Products (ProductName, Price, Stock)
+VALUES
+(N'Laptop Dell XPS 15', 35000000, 10),
+(N'iPhone 14 Pro Max', 29000000, 20),
+(N'Chuột Logitech MX Master 3', 2500000, 30),
+(N'Bàn phím cơ Keychron K2', 1800000, 25);
+
+INSERT INTO Orders (CustomerID, TotalAmount)
+VALUES 
+(1, 63000000), -- Nguyễn Văn A
+(2, 29000000), -- Trần Thị B
+(3, 1800000);   -- Lê Văn C
+
+INSERT INTO OrderDetails (OrderID, ProductID, Quantity, Price)
+VALUES
+(1, 1, 1, 35000000), -- Nguyễn Văn A mua 1 Laptop Dell
+(1, 2, 1, 29000000), -- Nguyễn Văn A mua 1 iPhone
+(2, 2, 1, 29000000), -- Trần Thị B mua 1 iPhone
+(3, 4, 1, 1800000);  -- Lê Văn C mua 1 bàn phím
+
+-- 1. Lấy danh sách tất cả khách hàng
+SELECT * FROM Customers;
+
+-- 2. Lấy sản phẩm có giá trên 5 triệu
+SELECT * FROM Products WHERE Price > 5000000;
+
+-- 3. Hiển thị đơn hàng kèm tên khách hàng, ngày đặt, tổng tiền
+SELECT o.OrderID, c.Name, o.OrderDate, o.TotalAmount
+FROM Orders o
+JOIN Customers c ON o.CustomerID = c.CustomerID;
+
+-- 4. Hiển thị chi tiết đơn hàng kèm tên sản phẩm, số lượng, giá
+SELECT od.OrderID, p.ProductName, od.Quantity, od.Price
+FROM OrderDetails od
+JOIN Products p ON od.ProductID = p.ProductID;
+
+-- 5. Tổng tiền mỗi khách hàng đã chi tiêu
+SELECT c.Name, SUM(od.Quantity * od.Price) AS TotalSpent
+FROM Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID
+JOIN OrderDetails od ON o.OrderID = od.OrderID
+GROUP BY c.Name;
+
+-- 6. Tổng số lượng sản phẩm đã bán ra
+SELECT SUM(Quantity) AS TotalSold FROM OrderDetails;
+
+-- 7. Khách hàng chi tiêu nhiều nhất
+SELECT TOP 1 c.Name, SUM(od.Quantity * od.Price) AS TotalSpent
+FROM Customers c
+JOIN Orders o ON c.CustomerID = o.CustomerID
+JOIN OrderDetails od ON o.OrderID = od.OrderID
+GROUP BY c.Name
+ORDER BY TotalSpent DESC;
+
+
+--MỞ RỘNG
+-- Thêm bảng Employees
+CREATE TABLE Employees (
+    EmployeeID INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(100),
+    Role NVARCHAR(50),
+    Phone NVARCHAR(20)
+);
+
+-- Thêm cột trạng thái cho Orders
+ALTER TABLE Orders
+ADD Status NVARCHAR(50); -- Chờ duyệt, Đã duyệt, Đang giao, Hoàn thành
+
+-- cập nhật trạng thái đơn hàng
+UPDATE Orders SET Status = N'Đã duyệt' WHERE OrderID = 1;
+
+-- Truy vấn đơn hàng đang giao
+SELECT * FROM Orders WHERE Status = N'Đang giao';
+
+--PROC
+CREATE PROCEDURE sp_CapNhat_TongTien_DonHang
+    @OrderID INT
+AS
+BEGIN
+    UPDATE Orders
+    SET TotalAmount = (
+        SELECT SUM(Quantity * Price)
+        FROM OrderDetails
+        WHERE OrderID = @OrderID
+    )
+    WHERE OrderID = @OrderID;
+END;
+
+EXEC sp_CapNhat_TongTien_DonHang @OrderID = 1;
+
+
+--BÀI TẬP THỰC HÀNH SQL SERVER - QUẢN LÝ BỆNH VIỆN
+
+CREATE DATABASE HospitalDB;
+USE HospitalDB;
+
+CREATE TABLE Patients (
+    PatientID INT IDENTITY(1,1) PRIMARY KEY,
+    FullName NVARCHAR(100),
+    DOB DATE,
+    Gender NVARCHAR(10),
+    Phone NVARCHAR(20),
+    Address NVARCHAR(255)
+);
+
+CREATE TABLE Doctors (
+    DoctorID INT IDENTITY(1,1) PRIMARY KEY,
+    FullName NVARCHAR(100),
+    Specialty NVARCHAR(100),
+    Phone NVARCHAR(20),
+    Email NVARCHAR(100)
+);
+
+CREATE TABLE Appointments (
+    AppointmentID INT IDENTITY(1,1) PRIMARY KEY,
+    PatientID INT NOT NULL,
+    DoctorID INT NOT NULL,
+    Date DATETIME,
+    Status NVARCHAR(50),
+    Notes NVARCHAR(255),
+    FOREIGN KEY (PatientID) REFERENCES Patients(PatientID),
+    FOREIGN KEY (DoctorID) REFERENCES Doctors(DoctorID)
+);
+
+CREATE TABLE Medications (
+    MedicationID INT IDENTITY(1,1) PRIMARY KEY,
+    Name NVARCHAR(100),
+    Description NVARCHAR(255),
+    Price INT,
+    Stock INT CHECK (Stock >= 0)
+);
+
+CREATE TABLE Prescriptions (
+    PrescriptionID INT IDENTITY(1,1) PRIMARY KEY,
+    AppointmentID INT,
+    MedicationID INT,
+    Quantity INT CHECK (Quantity > 0),
+    Dosage NVARCHAR(255),
+    FOREIGN KEY (AppointmentID) REFERENCES Appointments(AppointmentID),
+    FOREIGN KEY (MedicationID) REFERENCES Medications(MedicationID)
+);
+
+--PROC CẬP NHẬT TRẠNG THÁI LỊCH KHÁM
+CREATE PROCEDURE sp_UpdateAppointmentStatus
+    @AppointmentID INT,
+    @NewStatus NVARCHAR(50)
+AS
+BEGIN
+    UPDATE Appointments
+    SET Status = @NewStatus
+    WHERE AppointmentID = @AppointmentID;
+END;
+
+EXEC sp_UpdateAppointmentStatus @AppointmentID = 1, @NewStatus = N'Đã khám';
+
+--VIEW
+CREATE VIEW vw_PatientAppointments AS
+SELECT 
+    a.AppointmentID,
+    p.FullName AS PatientName,
+    d.FullName AS DoctorName,
+    a.Date,
+    a.Status
+FROM Appointments a
+JOIN Patients p ON a.PatientID = p.PatientID
+JOIN Doctors d ON a.DoctorID = d.DoctorID;
+
+
+CREATE VIEW vw_TopDoctors AS
+SELECT TOP 3
+    d.FullName AS DoctorName,
+    d.Specialty,
+    COUNT(a.AppointmentID) AS TotalAppointments
+FROM Doctors d
+JOIN Appointments a ON d.DoctorID = a.DoctorID
+GROUP BY d.FullName, d.Specialty
+ORDER BY COUNT(a.AppointmentID) DESC;
+
+SELECT * FROM vw_PatientAppointments;
+SELECT * FROM vw_TopDoctors;
