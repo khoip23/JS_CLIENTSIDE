@@ -1,1 +1,176 @@
 homework 36
+--36.1
+CREATE DATABASE cybersoft_shop;
+USE cybersoft_shop;
+
+CREATE TABLE LoaiSanPham (
+    MaLoaiSP INT PRIMARY KEY,
+    TenLoaiSP NVARCHAR(100) NOT NULL
+);
+
+CREATE TABLE SanPham (
+    MaSP INT PRIMARY KEY,
+    TenSP NVARCHAR(100) NOT NULL,
+    MoTa NVARCHAR(255),
+    Gia DECIMAL(18, 2) CHECK (Gia >= 0),
+    MaLoaiSP INT NOT NULL,
+    FOREIGN KEY (MaLoaiSP) REFERENCES LoaiSanPham(MaLoaiSP)
+);
+
+CREATE TABLE KhachHang (
+    MaKH INT PRIMARY KEY,
+    Ho NVARCHAR(50),
+    Ten NVARCHAR(50),
+    Email NVARCHAR(100),
+    SoDT NVARCHAR(20),
+    DiaChi NVARCHAR(255)
+);
+
+CREATE TABLE HoaDon (
+    MaHoaDon INT PRIMARY KEY,
+    NgayMua DATE,
+    MaKH INT NOT NULL,
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+CREATE TABLE ChiTietHoaDon (
+    MaHoaDon INT,
+    MaSP INT,
+    SoLuong INT CHECK (SoLuong > 0),
+    GiaBan DECIMAL(18, 2) CHECK (GiaBan >= 0),
+    PRIMARY KEY (MaHoaDon, MaSP),
+    FOREIGN KEY (MaHoaDon) REFERENCES HoaDon(MaHoaDon),
+    FOREIGN KEY (MaSP) REFERENCES SanPham(MaSP)
+);
+
+--DỮ LIỆU MẪU TEST
+
+INSERT INTO LoaiSanPham VALUES (1, N'Điện thoại'), (2, N'Laptop');
+
+INSERT INTO SanPham VALUES
+(101, N'iPhone 13', N'Điện thoại Apple', 20000000, 1),
+(102, N'MacBook Pro', N'Laptop Apple', 40000000, 2);
+
+INSERT INTO KhachHang VALUES
+(1, N'Nguyen', N'An', 'an.nguyen@gmail.com', '0909123456', N'123 Lê Lợi'),
+(2, N'Tran', N'Binh', 'binh.tran@gmail.com', '0911222333', N'456 Hai Bà Trưng');
+
+INSERT INTO HoaDon VALUES
+(1001, '2025-07-10', 1),
+(1002, '2025-07-11', 2);
+
+INSERT INTO ChiTietHoaDon VALUES
+(1001, 101, 2, 19500000),
+(1001, 102, 1, 39000000),
+(1002, 102, 1, 40000000);
+
+
+--36.2
+CREATE DATABASE QLBanSach;
+USE QLBanSach;
+
+CREATE TABLE KhachHang (
+    MaKH INT PRIMARY KEY,
+    HoTen NVARCHAR(100) NOT NULL,
+    NgaySinh DATE,
+    GioiTinh NVARCHAR(10),
+    DienThoai NVARCHAR(20),
+    TaiKhoan NVARCHAR(50),
+    MatKhau NVARCHAR(50),
+    Email NVARCHAR(100),
+    DiaChi NVARCHAR(255)
+);
+
+CREATE TABLE DonHang (
+    MaDonHang INT PRIMARY KEY,
+    NgayDat DATE,
+    NgayGiao DATE,
+    TinhTrangGH NVARCHAR(50),
+    DaThanhToan BIT,
+    MaKH INT NOT NULL,
+    FOREIGN KEY (MaKH) REFERENCES KhachHang(MaKH)
+);
+
+CREATE TABLE ChuDe (
+    MaChuDe INT PRIMARY KEY,
+    TenChuDe NVARCHAR(100)
+);
+
+CREATE TABLE NhaXuatBan (
+    MaNSX INT PRIMARY KEY,
+    TenNSB NVARCHAR(100),
+    DienThoai NVARCHAR(20),
+    DiaChi NVARCHAR(255)
+);
+
+CREATE TABLE Sach (
+    MaSach INT PRIMARY KEY,
+    TenSach NVARCHAR(200) NOT NULL,
+    MoTa NVARCHAR(MAX),
+    GiaBan DECIMAL(18, 2) CHECK (GiaBan >= 0),
+    AnhBia NVARCHAR(255),
+    CapNhat DATE,
+    SoLuongTon INT CHECK (SoLuongTon >= 0),
+    MaChuDe INT,
+    MaNSX INT,
+    FOREIGN KEY (MaChuDe) REFERENCES ChuDe(MaChuDe),
+    FOREIGN KEY (MaNSX) REFERENCES NhaXuatBan(MaNSX)
+);
+
+CREATE TABLE TacGia (
+    MaTacGia INT PRIMARY KEY,
+    TenTacGia NVARCHAR(100),
+    DienThoai NVARCHAR(20),
+    TieuSu NVARCHAR(MAX),
+    DiaChi NVARCHAR(255)
+);
+
+CREATE TABLE ChiTietDonHang (
+    MaDonHang INT,
+    MaSach INT,
+    SoLuong INT CHECK (SoLuong > 0),
+    DonGia DECIMAL(18,2) CHECK (DonGia >= 0),
+    PRIMARY KEY (MaDonHang, MaSach),
+    FOREIGN KEY (MaDonHang) REFERENCES DonHang(MaDonHang),
+    FOREIGN KEY (MaSach) REFERENCES Sach(MaSach)
+);
+
+CREATE TABLE ThamGia (
+    MaTacGia INT,
+    MaSach INT,
+    VaiTro NVARCHAR(50),
+    ViTri NVARCHAR(50),
+    PRIMARY KEY (MaTacGia, MaSach),
+    FOREIGN KEY (MaTacGia) REFERENCES TacGia(MaTacGia),
+    FOREIGN KEY (MaSach) REFERENCES Sach(MaSach)
+);
+
+--DỮ LIỆU ĐỂ TEST
+
+INSERT INTO ChuDe VALUES (1, N'Tiểu thuyết'), (2, N'Kỹ năng sống');
+
+INSERT INTO NhaXuatBan VALUES 
+(1, N'NXB Trẻ', '02838383838', N'TP.HCM'),
+(2, N'NXB Giáo Dục', '02812345678', N'Hà Nội');
+
+INSERT INTO TacGia VALUES 
+(1, N'Nguyễn Nhật Ánh', '0909000001', N'Tác giả nổi tiếng về truyện tuổi học trò', N'TP.HCM'),
+(2, N'Trần Văn B', '0909000002', N'Chuyên gia kỹ năng sống', N'Hà Nội');
+
+INSERT INTO Sach VALUES
+(101, N'Mắt Biếc', N'Truyện dài cảm động', 85000, 'matbiec.jpg', '2025-07-01', 100, 1, 1),
+(102, N'Sống như người Nhật', N'Kỹ năng sống và làm việc', 120000, 'songnhunguoinhat.jpg', '2025-07-02', 50, 2, 2);
+
+INSERT INTO ThamGia VALUES 
+(1, 101, N'Tác giả chính', N'Trang 1'),
+(2, 102, N'Biên tập', N'Trang 10');
+
+INSERT INTO KhachHang VALUES 
+(1, N'Lê Văn An', '2002-10-28', N'Nam', '0909111222', 'lean', '123', 'an@gmail.com', N'Quận 1, HCM');
+
+INSERT INTO DonHang VALUES
+(5001, '2025-07-10', '2025-07-15', N'Chờ giao', 0, 1);
+
+INSERT INTO ChiTietDonHang VALUES
+(5001, 101, 2, 85000),
+(5001, 102, 1, 120000);
