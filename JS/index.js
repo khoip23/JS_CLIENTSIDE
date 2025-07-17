@@ -103,6 +103,18 @@ let arrSinhVien = [
     { id: 3, name: 'CCC', age: 21 }, //index: 2
 ]
 
+let arrSinhVien1 = [
+    { id: 1, name: 'AAA', age: 19 }, //index: 0
+    { id: 2, name: 'BBB', age: 20 }, //index: 1
+    { id: 3, name: 'CCC', age: 21 }, //index: 2
+]
+
+let arrSinhVien2 = [
+    { id: 1, name: 'AAA', age: 19 }, //index: 0
+    { id: 2, name: 'BBB', age: 20 }, //index: 1
+    { id: 3, name: 'CCC', age: 21 }, //index: 2
+]
+
 for (let sv of arrSinhVien) {
     console.log(sv);
 }
